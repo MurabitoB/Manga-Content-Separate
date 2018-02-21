@@ -5,6 +5,7 @@
 #include"image_information.h"
 #include<utility>
 #include<algorithm>
+#include <stdlib.h>		
 using namespace std;
 using namespace cv;
 #define lineSize src_height / 150
@@ -214,10 +215,12 @@ public:
 	}
 	void drawLines(Mat &image,vector<vector<pair<Point,Point>>> ptC, Scalar color = Scalar(0, 0, 255), int thickness = 3)
 	{
+		
 		for (int i = 0; i < ptC.size(); i++)
 		{
 			for (int j = 0; j < ptC.at(i).size(); j++)
 			{
+				Scalar color = Scalar(rand() % 255, rand() % 255, rand() % 255);
 				line(image, ptC.at(i).at(j).first, ptC.at(i).at(j).second, color, thickness);
 			}
 		}
@@ -243,6 +246,23 @@ void getRegionofInterest(Mat &img)
 {
 	Mat Roi = img(Rect(100, 100, 600, 600));
 }
+void printLog()
+{
+	for (int i = 0; i < verLcategory.size(); i++)
+	{
+		for (int j = 0; j < verLcategory.at(i).size(); j++)
+		{
+			cout << "Line  verL:(" << verLcategory.at(i).at(j).first.x << "," << verLcategory.at(i).at(j).first.y << ") , (" << verLcategory.at(i).at(j).second.x << "," << verLcategory.at(i).at(j).second.y<<")"<< endl;
+		}
+	}
+	for (int i = 0; i < horLcategory.size(); i++)
+	{
+		for (int j = 0; j < horLcategory.at(i).size(); j++)
+		{
+			cout << "Line  horL:(" << horLcategory.at(i).at(j).first.x << "," << horLcategory.at(i).at(j).first.y << ") , (" << horLcategory.at(i).at(j).second.x << "," << horLcategory.at(i).at(j).second.y << ")" << endl;
+		}
+	}
+}
 void setlinefinder(Mat &img_canny,Mat &img_src)
 {
 	FindLines linefinder;
@@ -258,6 +278,7 @@ void setlinefinder(Mat &img_canny,Mat &img_src)
 	pointFilter(verLcategory, false);
 	linefinder.drawLines(img_src,verLcategory);
 	linefinder.drawLines(img_src, horLcategory);
+	printLog();
 }
 
 int main()
@@ -273,5 +294,6 @@ int main()
 	namedWindow("figure", WINDOW_FREERATIO); 
 	imshow("figure", img_src);
 	waitKey(0);
+
 	return 0;
 }
