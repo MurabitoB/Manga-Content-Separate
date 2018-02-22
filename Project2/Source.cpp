@@ -228,9 +228,17 @@ public:
 };
 
 
-void DetRoi()
+void DetRoi(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC)
 {
-	//統計出頂部
+	int uB, lB; // UpperBound lowwerBound
+	if (!horC.empty()) //check horL not empty
+	{
+		uB = 0;
+	}
+	else
+	{
+		return; 
+	}
 }
 void getInformation(Mat src)
 {
@@ -263,6 +271,11 @@ void printLog()
 		}
 	}
 }
+void imgShowFunction(string windowname, Mat img)
+{
+	namedWindow(windowname.c_str(), WINDOW_FREERATIO);
+	imshow(windowname.c_str(), img);
+}
 void setlinefinder(Mat &img_canny,Mat &img_src)
 {
 	FindLines linefinder;
@@ -276,9 +289,13 @@ void setlinefinder(Mat &img_canny,Mat &img_src)
 	pointClassify(horL, true);
 	pointFilter(horLcategory, true);
 	pointFilter(verLcategory, false);
-	linefinder.drawLines(img_src,verLcategory);
-	linefinder.drawLines(img_src, horLcategory);
+	Mat img2(src_height, src_width, CV_8U, Scalar(100));
+	linefinder.drawLines(img2,verLcategory);
+	linefinder.drawLines(img2, horLcategory);
+	imgShowFunction("預測線", img2);
+	imgShowFunction("原圖", img_src);
 	printLog();
+	waitKey(0);
 }
 
 int main()
@@ -291,9 +308,7 @@ int main()
 	blur(img_gray, img_gray, Size(3, 3)); // 消雜訊
 	Canny(img_gray, img_canny, 500, 800, 3); // 繪製邊緣
 	setlinefinder(img_canny, img_src); // 偵測長直線
-	namedWindow("figure", WINDOW_FREERATIO); 
-	imshow("figure", img_src);
-	waitKey(0);
+
 
 	return 0;
 }
