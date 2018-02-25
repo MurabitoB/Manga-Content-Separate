@@ -9,6 +9,7 @@
 using namespace std;
 using namespace cv;
 #define lineSize src_height / 150
+#define verDeviation  src_height / 200
 vector <pair<Point, Point>>horL; 
 vector <pair<Point, Point>>verL;
 vector<vector<pair<Point, Point>>> horLcategory;
@@ -227,18 +228,142 @@ public:
 	}
 };
 
+bool between(pair<Point, Point>top, pair<Point, Point> bottom, pair<Point, Point> src)
+{
+	int topX[2], topY[2], bottomX[2], bottomY[2], srcX[2], srcY[2];
+	topX[0] = top.first.x;
+	topY[0] = top.first.y;
+	topX[1] = top.second.x;
+	topY[1] = top.second.y;
 
+	bottomX[0] = bottom.first.x;
+	bottomY[1] = bottom.first.y;
+	bottomX[0] = bottom.second.x;
+	bottomY[1] = bottom.second.y;
+
+	srcX[0] = src.first.x;
+	srcY[1] = src.first.y;
+	srcX[0] = src.second.x;
+	srcY[1] = src.second.y;
+
+	if (srcY[0] > topY[0] - verDeviation && srcY[1] < topY[1] + verDeviation)
+	{
+		return true;
+	}
+}
+bool verRangeLegal(pair<Point, Point> &uB, pair<Point, Point> &lB, vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC)
+{
+	if (horC.at(1).at(0).first.y - horC.at(0).at(0).first.y <= src_height / 6)
+	{
+		horC.erase(horC.begin());
+		uB = horC.at(0).at(0);
+		if (horC.size() > 1)
+		{
+			lB = horC.at(1).at(0);
+		}
+		else
+		{
+			lB = horC.at(0).at(0);
+			lB.first.y = 0;
+			lB.second.y = 0;
+		}
+	}
+	return true;
+}
+bool verDiff(vector<vector<pair<Point, Point>>> &ver)
+{
+	for (int i = 0; i < ver.size(); i++)
+	{
+		for (int j = 0; j < ver.at(i).size(); i++)
+		{
+
+		}
+	}
+}
 void DetRoi(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC)
 {
-	int uB, lB; // UpperBound lowwerBound
+	vector<Mat> roi;
+	Mat tempRoi;
+	pair<Point,Point> uB, lB; // UpperBound lowwerBound
 	if (!horC.empty()) //check horL not empty
 	{
-		uB = 0;
+		vector<pair<Point, Point>> possibleTop , leftBound, rightBound ,innerLine;
+		//先預設有可能頂部沒有線，所以先在上面跟第一層一樣多條的線段
+		for (int i = 0; i < horC.at(0).size(); i++)
+		{
+			possibleTop.push_back(horC.at(0).at(i));
+			possibleTop.at(0).first.y = possibleTop.at(0).first.y = possibleTop.at(0).second.y = possibleTop.at(0).second.y = 0;
+		}
+		horC.insert(horC.begin(), possibleTop);
+		//設定upperbound lowerbound
+		uB = horC.at(0).at(0);//頂層
+		lB = horC.at(1).at(0); //第一條水平線
+		
+		//假設頂部跟第一層的範圍夾得太小 則當作沒有頂部夾到東西的可能性
+		if (horC.at(1).at(0).first.y - horC.at(0).at(0).first.y <= src_height / 6)
+		{
+			horC.erase(horC.begin());
+			uB = horC.at(0).at(0);
+			if (horC.size() > 1)
+			{
+				lB = horC.at(1).at(0);
+			}
+			else
+			{
+				lB = horC.at(0).at(0);
+				lB.first.y = 0;
+				lB.second.y = 0;
+			}
+		}
+
+		//找upperbound 和 lowerbound 夾住的的左邊的線和右邊的線
+		for (int i = 0; i < verC.size(); i++)
+		{
+			for (int j = 0; j < verC.at(i).size(); j++)
+			{
+				//如果在upperbound 和 lowerbound中間則加入可能清單
+				if (between(uB, lB, verC.at(i).at(j)))
+				{
+					innerLine.push_back(verC.at(i).at(j));
+				}
+			}
+		}
+		//把innerLine按照x軸位置sort一遍
+		if (!innerLine.empty())
+		{
+			pointSort(innerLine, false);
+		}
+		//根據innerLine 找出leftBound 和 rightBound
+		for (int i = 0; i < innerLine.size(); i++)
+		{
+			if (leftBound.empty() && uB.first.x + lineSize > innerLine.at(i).first.x)//檢查是否真的是在左邊
+			{
+				leftBound.push_back(innerLine.at(i));
+			}
+			else if (!leftBound.empty() && abs(leftBound.at(0).first.x - innerLine.at(i).first.x) < lineSize)//檢查是否是在左邊那條同一個垂直線
+			{
+				leftBound.push_back(innerLine.at(i));
+			}
+			if (rightBound.empty() && uB.first.x - lineSize < innerLine.at(i).first.x)
+			{
+				rightBound.push_back(innerLine.at(i));
+			}
+			else if (!rightBound.empty() && abs(rightBound.at(0).first.x - innerLine.at(i).first.x) < lineSize)
+			{
+				rightBound.push_back(innerLine.at(i));
+			}
+		}
+		//判斷這次的搜尋可不可用
+
 	}
 	else
 	{
 		return; 
 	}
+}
+void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC)
+{
+	
 }
 void getInformation(Mat src)
 {
@@ -248,7 +373,7 @@ void getInformation(Mat src)
 
 void testLine(Mat &img)
 {
-	img = imread("img086.jpg");
+	img = imread("img020.jpg");
 }
 void getRegionofInterest(Mat &img)
 {
@@ -260,14 +385,14 @@ void printLog()
 	{
 		for (int j = 0; j < verLcategory.at(i).size(); j++)
 		{
-			cout << "Line  verL:(" << verLcategory.at(i).at(j).first.x << "," << verLcategory.at(i).at(j).first.y << ") , (" << verLcategory.at(i).at(j).second.x << "," << verLcategory.at(i).at(j).second.y<<")"<< endl;
+			cout << "Line "<< i <<"  verL:(" << verLcategory.at(i).at(j).first.x << "," << verLcategory.at(i).at(j).first.y << ") , (" << verLcategory.at(i).at(j).second.x << "," << verLcategory.at(i).at(j).second.y<<")"<< endl;
 		}
 	}
 	for (int i = 0; i < horLcategory.size(); i++)
 	{
 		for (int j = 0; j < horLcategory.at(i).size(); j++)
 		{
-			cout << "Line  horL:(" << horLcategory.at(i).at(j).first.x << "," << horLcategory.at(i).at(j).first.y << ") , (" << horLcategory.at(i).at(j).second.x << "," << horLcategory.at(i).at(j).second.y << ")" << endl;
+			cout << "Line  " << i << "  horL:(" << horLcategory.at(i).at(j).first.x << "," << horLcategory.at(i).at(j).first.y << ") , (" << horLcategory.at(i).at(j).second.x << "," << horLcategory.at(i).at(j).second.y << ")" << endl;
 		}
 	}
 }

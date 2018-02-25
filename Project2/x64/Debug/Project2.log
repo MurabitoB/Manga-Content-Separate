@@ -1,17 +1,17 @@
-﻿Build started 2018/2/22 下午 07:39:20.
-     1>Project "E:\大三課程\專題\Project2\Manga-Content-Separate\Project2\Project2.vcxproj" on node 2 (Build target(s)).
+﻿Build started 2018/2/26 上午 02:18:19.
+     1>Project "D:\Project\Lesson\Manga-Content-Separate\Project2\Project2.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         D:\vs2013\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt Source.cpp
+         D:\Apps\vs2013\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt Source.cpp
          Source.cpp
      1>C:\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
      1>C:\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
      1>C:\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (950). Save the file in Unicode format to prevent data loss
-     1>Source.cpp(233): warning C4101: 'lB' : unreferenced local variable
+     1>d:\project\lesson\manga-content-separate\project2\source.cpp(253): warning C4715: 'between' : not all control paths return a value
        Link:
-         D:\vs2013\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"E:\大三課程\專題\Project2\Manga-Content-Separate\x64\Debug\Project2.exe" /INCREMENTAL /NOLOGO opencv_world310d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\大三課程\專題\Project2\Manga-Content-Separate\x64\Debug\Project2.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\大三課程\專題\Project2\Manga-Content-Separate\x64\Debug\Project2.lib" /MACHINE:X64 x64\Debug\Source.obj
-         Project2.vcxproj -> E:\大三課程\專題\Project2\Manga-Content-Separate\x64\Debug\Project2.exe
-     1>Done Building Project "E:\大三課程\專題\Project2\Manga-Content-Separate\Project2\Project2.vcxproj" (Build target(s)).
+         D:\Apps\vs2013\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Project\Lesson\Manga-Content-Separate\x64\Debug\Project2.exe" /INCREMENTAL /NOLOGO opencv_world310d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\Project\Lesson\Manga-Content-Separate\x64\Debug\Project2.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Project\Lesson\Manga-Content-Separate\x64\Debug\Project2.lib" /MACHINE:X64 x64\Debug\Source.obj
+         Project2.vcxproj -> D:\Project\Lesson\Manga-Content-Separate\x64\Debug\Project2.exe
+     1>Done Building Project "D:\Project\Lesson\Manga-Content-Separate\Project2\Project2.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.31
+Time Elapsed 00:00:02.14
