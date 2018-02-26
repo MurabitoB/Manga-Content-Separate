@@ -14,6 +14,15 @@ vector <pair<Point, Point>>horL;
 vector <pair<Point, Point>>verL;
 vector<vector<pair<Point, Point>>> horLcategory;
 vector<vector<pair<Point, Point>>> verLcategory;
+void imgShowFunction(string windowname, Mat img)
+{
+	namedWindow(windowname.c_str(), WINDOW_FREERATIO);
+	imshow(windowname.c_str(), img);
+}
+bool pairSort(pair<int, int>a, pair<int, int>b)
+{
+	return a.first < b.first;
+}
 bool pointSortY(pair<Point, Point> point, pair<Point, Point> point2)
 {
 	return point.first.y < point2.first.y;
@@ -22,9 +31,9 @@ bool pointSortX(pair<Point, Point> point, pair<Point, Point> point2)
 {
 	return point.first.x < point2.first.x;
 }
-void pointSort(vector<pair<Point, Point>> &point, bool horizental)
+void pointSort(vector<pair<Point, Point>> &point, bool sortY)
 {
-	horizental ? sort(point.begin(), point.end(), pointSortY) : sort(point.begin(), point.end(), pointSortX);
+	sortY ? sort(point.begin(), point.end(), pointSortY) : sort(point.begin(), point.end(), pointSortX);
 }
 
 void pointClassify(vector<pair<Point, Point>> &point, bool horizental)
@@ -228,141 +237,114 @@ public:
 	}
 };
 
-bool between(pair<Point, Point>top, pair<Point, Point> bottom, pair<Point, Point> src)
-{
-	int topX[2], topY[2], bottomX[2], bottomY[2], srcX[2], srcY[2];
-	topX[0] = top.first.x;
-	topY[0] = top.first.y;
-	topX[1] = top.second.x;
-	topY[1] = top.second.y;
-
-	bottomX[0] = bottom.first.x;
-	bottomY[1] = bottom.first.y;
-	bottomX[0] = bottom.second.x;
-	bottomY[1] = bottom.second.y;
-
-	srcX[0] = src.first.x;
-	srcY[1] = src.first.y;
-	srcX[0] = src.second.x;
-	srcY[1] = src.second.y;
-
-	if (srcY[0] > topY[0] - verDeviation && srcY[1] < topY[1] + verDeviation)
-	{
-		return true;
-	}
-}
-bool verRangeLegal(pair<Point, Point> &uB, pair<Point, Point> &lB, vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC)
-{
-	if (horC.at(1).at(0).first.y - horC.at(0).at(0).first.y <= src_height / 6)
-	{
-		horC.erase(horC.begin());
-		uB = horC.at(0).at(0);
-		if (horC.size() > 1)
-		{
-			lB = horC.at(1).at(0);
-		}
-		else
-		{
-			lB = horC.at(0).at(0);
-			lB.first.y = 0;
-			lB.second.y = 0;
-		}
-	}
-	return true;
-}
 bool verDiff(vector<vector<pair<Point, Point>>> &ver)
 {
+	//選取某一個元素
 	for (int i = 0; i < ver.size(); i++)
 	{
-		for (int j = 0; j < ver.at(i).size(); i++)
+		for (int j = 0; j < ver.at(i).size(); j++)
 		{
-
-		}
-	}
-}
-void DetRoi(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC)
-{
-	vector<Mat> roi;
-	Mat tempRoi;
-	pair<Point,Point> uB, lB; // UpperBound lowwerBound
-	if (!horC.empty()) //check horL not empty
-	{
-		vector<pair<Point, Point>> possibleTop , leftBound, rightBound ,innerLine;
-		//先預設有可能頂部沒有線，所以先在上面跟第一層一樣多條的線段
-		for (int i = 0; i < horC.at(0).size(); i++)
-		{
-			possibleTop.push_back(horC.at(0).at(i));
-			possibleTop.at(0).first.y = possibleTop.at(0).first.y = possibleTop.at(0).second.y = possibleTop.at(0).second.y = 0;
-		}
-		horC.insert(horC.begin(), possibleTop);
-		//設定upperbound lowerbound
-		uB = horC.at(0).at(0);//頂層
-		lB = horC.at(1).at(0); //第一條水平線
-		
-		//假設頂部跟第一層的範圍夾得太小 則當作沒有頂部夾到東西的可能性
-		if (horC.at(1).at(0).first.y - horC.at(0).at(0).first.y <= src_height / 6)
-		{
-			horC.erase(horC.begin());
-			uB = horC.at(0).at(0);
-			if (horC.size() > 1)
+			//跟不是同一類的元素做比較
+			for (int k = 0; k < ver.size(); k++)
 			{
-				lB = horC.at(1).at(0);
-			}
-			else
-			{
-				lB = horC.at(0).at(0);
-				lB.first.y = 0;
-				lB.second.y = 0;
-			}
-		}
-
-		//找upperbound 和 lowerbound 夾住的的左邊的線和右邊的線
-		for (int i = 0; i < verC.size(); i++)
-		{
-			for (int j = 0; j < verC.at(i).size(); j++)
-			{
-				//如果在upperbound 和 lowerbound中間則加入可能清單
-				if (between(uB, lB, verC.at(i).at(j)))
+				for (int l = 0; l < ver.at(k).size(); l++)
 				{
-					innerLine.push_back(verC.at(i).at(j));
+					if ( (k != i) )
+						//如果找到則把兩類合而為一
+					{
+						if ((ver.at(i).at(j).first.y >= ver.at(k).at(l).first.y && ver.at(i).at(j).first.y <= ver.at(k).at(l).second.y) ||
+							(ver.at(i).at(j).second.y >= ver.at(k).at(l).first.y && ver.at(i).at(j).second.y <= ver.at(k).at(l).second.y))
+						{
+							ver.at(i).insert(ver.at(i).end(), ver.at(k).begin(), ver.at(k).end());
+							ver.erase(ver.begin() + k);
+							return true;
+						}
+					}
 				}
 			}
 		}
-		//把innerLine按照x軸位置sort一遍
-		if (!innerLine.empty())
-		{
-			pointSort(innerLine, false);
-		}
-		//根據innerLine 找出leftBound 和 rightBound
-		for (int i = 0; i < innerLine.size(); i++)
-		{
-			if (leftBound.empty() && uB.first.x + lineSize > innerLine.at(i).first.x)//檢查是否真的是在左邊
-			{
-				leftBound.push_back(innerLine.at(i));
-			}
-			else if (!leftBound.empty() && abs(leftBound.at(0).first.x - innerLine.at(i).first.x) < lineSize)//檢查是否是在左邊那條同一個垂直線
-			{
-				leftBound.push_back(innerLine.at(i));
-			}
-			if (rightBound.empty() && uB.first.x - lineSize < innerLine.at(i).first.x)
-			{
-				rightBound.push_back(innerLine.at(i));
-			}
-			else if (!rightBound.empty() && abs(rightBound.at(0).first.x - innerLine.at(i).first.x) < lineSize)
-			{
-				rightBound.push_back(innerLine.at(i));
-			}
-		}
-		//判斷這次的搜尋可不可用
-
 	}
-	else
-	{
-		return; 
-	}
+	return false;
 }
-void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC)
+
+void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC, Mat src)
 {
+	vector<vector<pair<Point, Point>>> ver;
+	vector<pair<Point, Point>> verT;
+	if (!horC.empty())
+	{
+		horC.insert(horC.begin(), horC.at(0));
+		for (int i = 0; i < horC.at(0).size(); i++)
+		{
+			horC.at(0).at(i).first.y = 0;
+			horC.at(0).at(i).second.y = 0;
+		}
+		horC.insert(horC.end(), horC.at(horC.size()-1));
+		for (int i = 0; i < horC.at(horC.size() - 1).size(); i++)
+		{
+			horC.at(horC.size() - 1).at(i).first.y = src_height;
+			horC.at(horC.size() - 1).at(i).second.y = src_height;
+		}
+	}
+	for (int i = 0; i < verC.size(); i++)
+	{
+		for (int j = 0; j < verC.at(i).size(); j++)
+		{
+			verT.push_back(verC.at(i).at(j));
+			ver.push_back(verT);
+			verT.clear();
+		}
+	}
+#define up horC.at(index).at(0).first.y
+#define down horC.at(j).at(0).first.y
+	while (verDiff(ver));
+	//整理每個類別最高點最低點
+	vector<pair<int, int>>vecY;
+	vector<pair<int, int>>horY;
+	vector<Mat> Roi;
+	for (int i = 0; i < ver.size(); i++)
+	{
+		int minTemp = INT_MAX, maxTemp = 0;
+		for (int j = 0; j < ver.at(i).size(); j++)
+		{
+			maxTemp = MAX(maxTemp, ver.at(i).at(j).second.y);
+			minTemp = MIN(minTemp, ver.at(i).at(j).first.y);
+		}
+		vecY.push_back(make_pair(minTemp, maxTemp));
+	}
+	sort(vecY.begin(), vecY.end(), pairSort);
+		int index = 0;
+
+		for (int j = 1; j < horC.size(); j++)
+		{
+			if (!vecY.empty() && up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second) //如果確定有夾到
+			{
+				for (; index <= j ; index++)
+				{
+					//如果超過就倒回來
+					if (!(up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second))
+					{
+						index--;
+						break;
+					}
+				}
+				horY.push_back(make_pair(up, down));
+				//清除可能殘留的直線
+				for (int k = 0; k < vecY.size(); k++)
+				{
+					if ((up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second))
+					{
+						vecY.erase(vecY.begin());
+						k = 0;
+					}
+				}
+			}
+		}
+		for (int i = 0; i < horY.size(); i++)
+		{
+			Roi.push_back(src(Rect(0, horY.at(i).first, src_width, horY.at(i).second - horY.at(i).first)));
+			imgShowFunction("預測線" +( i + 1), Roi.at(i));
+		}
 	
 }
 void getInformation(Mat src)
@@ -373,7 +355,7 @@ void getInformation(Mat src)
 
 void testLine(Mat &img)
 {
-	img = imread("img020.jpg");
+	img = imread("img021.jpg");
 }
 void getRegionofInterest(Mat &img)
 {
@@ -396,11 +378,7 @@ void printLog()
 		}
 	}
 }
-void imgShowFunction(string windowname, Mat img)
-{
-	namedWindow(windowname.c_str(), WINDOW_FREERATIO);
-	imshow(windowname.c_str(), img);
-}
+
 void setlinefinder(Mat &img_canny,Mat &img_src)
 {
 	FindLines linefinder;
@@ -417,6 +395,7 @@ void setlinefinder(Mat &img_canny,Mat &img_src)
 	Mat img2(src_height, src_width, CV_8U, Scalar(100));
 	linefinder.drawLines(img2,verLcategory);
 	linefinder.drawLines(img2, horLcategory);
+	horizonCut(verLcategory, horLcategory,img_src);
 	imgShowFunction("預測線", img2);
 	imgShowFunction("原圖", img_src);
 	printLog();
