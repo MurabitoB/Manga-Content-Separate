@@ -14,6 +14,14 @@ vector <pair<Point, Point>>horL;
 vector <pair<Point, Point>>verL;
 vector<vector<pair<Point, Point>>> horLcategory;
 vector<vector<pair<Point, Point>>> verLcategory;
+struct roiStruct{
+	Mat img;
+	int height, width;
+	int upL, downL;
+	vector <pair<Point, Point>>verLine;
+	vector<pair<Point, Point>> upLine;
+	vector<pair<Point, Point>> downLine;
+};
 void imgShowFunction(string windowname, Mat img)
 {
 	namedWindow(windowname.c_str(), WINDOW_FREERATIO);
@@ -266,7 +274,58 @@ bool verDiff(vector<vector<pair<Point, Point>>> &ver)
 	}
 	return false;
 }
-
+vector<Mat> verticalCut(roiStruct &roiH)
+{
+	vector<Mat> roi;
+	bool between = false;
+	int index = 0, leftBorder = 0, rightBorder = 0;
+#define left  roiH.verLine.at(index).first.x
+#define right roiH.verLine.at(i).first.x
+	for (int i = 1; i < roiH.verLine.size(); i++)
+	{
+		//判斷是否存在 up down 是否有存在一邊 夾在 left right 之間
+		for (int k = 0; k < roiH.upLine.size(); k++)
+		{
+			if ((roiH.upLine.at(k).first.x + 10 > left) && (roiH.upLine.at(k).second.x - 10 < right))
+			{
+				between = true;
+				leftBorder = roiH.upLine.at(k).first.x;
+				rightBorder = roiH.upLine.at(k).second.x;
+				break;
+			}
+		}
+		if (!between)
+		{
+			for (int k = 0; k < roiH.downLine.size(); k++)
+			{
+				if ((roiH.downLine.at(k).first.x + 10 > left) && (roiH.downLine.at(k).second.x - 10 < right))
+				{
+					between = true;
+					leftBorder = roiH.downLine.at(k).first.x;
+					rightBorder = roiH.downLine.at(k).second.x;
+					break;
+				}
+			}
+		}
+		//檢查可不可以夾得更緊
+		if (between)
+		{
+			for (; index <= i; index++)
+			{
+				//如果超過就倒回來
+				if (!(left - 10 < leftBorder && right + 10 > rightBorder))
+				{
+					index--;
+					break;
+				}
+			}
+			between = false;
+			roi.push_back(roiH.img(Rect(left, 0, right - left, roiH.downL - roiH.upL)));
+			index = i;
+		}
+	}
+	return roi;
+}
 void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Point, Point>>> &horC, Mat src)
 {
 	vector<vector<pair<Point, Point>>> ver;
@@ -300,7 +359,7 @@ void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Poi
 	while (verDiff(ver));
 	//整理每個類別最高點最低點
 	vector<pair<int, int>>vecY;
-	vector<pair<int, int>>horY;
+	vector<roiStruct>horY;
 	vector<Mat> Roi;
 	for (int i = 0; i < ver.size(); i++)
 	{
@@ -313,40 +372,99 @@ void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Poi
 		vecY.push_back(make_pair(minTemp, maxTemp));
 	}
 	sort(vecY.begin(), vecY.end(), pairSort);
-		int index = 0;
+	int index = 0 , lastDown = 0;
 
-		for (int j = 1; j < horC.size(); j++)
+	for (int j = 1; j < horC.size(); j++)
+	{
+		if (!vecY.empty() && up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second) //如果確定有夾到
 		{
-			if (!vecY.empty() && up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second) //如果確定有夾到
+			for (; index <= j ; index++)
 			{
-				for (; index <= j ; index++)
+			//如果超過就倒回來
+				if (!(up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second))
 				{
-					//如果超過就倒回來
-					if (!(up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second))
-					{
-						index--;
-						break;
-					}
+					index--;
+					break;
 				}
-				horY.push_back(make_pair(up, down));
-				//清除可能殘留的直線
-				for (int k = 0; k < vecY.size(); k++)
+			}
+			roiStruct roiT;
+			roiT.upL = up;
+			roiT.downL = down;
+			horY.push_back(roiT);
+			lastDown = down;
+			//清除可能殘留的直線
+			for (int k = 0; k < vecY.size(); k++)
+			{
+				if ((up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second))
 				{
-					if ((up - 10 < vecY.at(0).first && down + 10 > vecY.at(0).second))
+					vecY.erase(vecY.begin());
+					k = 0;
+				}
+			}
+			//將 夾在 up and down 的所有垂直線送到 horY
+			for (int k = 0; k < ver.size(); k++)
+			{
+				for (int l = 0; l<ver.at(k).size(); l++)
+				{
+					if ((ver.at(k).at(l).first.y + lineSize > up) && (ver.at(k).at(l).second.y - lineSize < down))
 					{
-						vecY.erase(vecY.begin());
-						k = 0;
+						horY.back().verLine.push_back(ver.at(k).at(l));
 					}
 				}
 			}
+			pair<Point, Point> tempP;
+			Point a;
+			a.x = 0, 
+			a.y = 0;
+			tempP.first = a;
+			a.y = down - up;
+			tempP.second = a;
+			horY.back().verLine.insert(horY.back().verLine.begin(), tempP);
+			a.x = src_width,
+			a.y = 0;
+			tempP.first = a;
+			a.y = down - up;
+			tempP.second = a;
+			horY.back().verLine.push_back(tempP);
+			horY.back().upLine = horC.at(index);
+			horY.back().downLine = horC.at(j);
 		}
-		for (int i = 0; i < horY.size(); i++)
+	}
+	if (src_height - lastDown > src_height / 4)
+	{
+		roiStruct roiT;
+		roiT.upL =	lastDown;
+		roiT.downL = src_height;
+		horY.push_back(roiT);
+	}
+	for (int i = 0; i < horY.size(); i++)
+	{
+		horY.at(i).img= src(Rect(0, horY.at(i).upL, src_width, horY.at(i).downL - horY.at(i).upL));
+		/*imgShowFunction("預測線" + (i + 1), horY.at(i).img);*/
+	}
+	for (int i = 0; i < horY.size(); i++)
+	{
+		pointSort(horY.at(i).upLine, false);
+		pointSort(horY.at(i).downLine, false);
+		pointSort(horY.at(i).verLine, false);
+	}
+	vector<vector<Mat>>roit;
+	for (int i = 0; i < horY.size(); i++)
+	{
+		roit.push_back(verticalCut(horY.at(i)));
+	}
+	for (int i = 0; i < roit.size(); i++)
+	{
+		for (int j = 0; j < roit.at(i).size(); j++)
 		{
-			Roi.push_back(src(Rect(0, horY.at(i).first, src_width, horY.at(i).second - horY.at(i).first)));
-			imgShowFunction("預測線" +( i + 1), Roi.at(i));
+			string name;
+			name = rand();
+			imgShowFunction( name, roit.at(i).at(j));
 		}
-	
+	}
 }
+
+
 void getInformation(Mat src)
 {
 	src_height = src.rows;
@@ -355,12 +473,9 @@ void getInformation(Mat src)
 
 void testLine(Mat &img)
 {
-	img = imread("img021.jpg");
+	img = imread("img012.jpg");
 }
-void getRegionofInterest(Mat &img)
-{
-	Mat Roi = img(Rect(100, 100, 600, 600));
-}
+
 void printLog()
 {
 	for (int i = 0; i < verLcategory.size(); i++)
