@@ -14,6 +14,7 @@ vector <pair<Point, Point>>horL;
 vector <pair<Point, Point>>verL;
 vector<vector<pair<Point, Point>>> horLcategory;
 vector<vector<pair<Point, Point>>> verLcategory;
+string seq;
 struct roiStruct{
 	Mat img;
 	int height, width;
@@ -47,6 +48,10 @@ void pointSort(vector<pair<Point, Point>> &point, bool sortY)
 void pointClassify(vector<pair<Point, Point>> &point, bool horizental)
 {
 	vector <pair<Point, Point>> tempPointPair;
+	if (point.size() == 0)
+	{
+		return;
+	}
 	if (horizental)
 	{
 		tempPointPair.push_back(point.front());
@@ -244,7 +249,47 @@ public:
 		}
 	}
 };
+string setName(string seqNum, string top, string order)
+{
+	string name = "000_00_00";
+	if (seqNum.length() == 3)
+	{
+		name[0] = seqNum[0];
+		name[1] = seqNum[1];
+		name[2] = seqNum[2];
+	}
+	else if (seqNum.length() == 2)
+	{
+		name[1] = seqNum[0];
+		name[2] = seqNum[1];
+	}
+	else if (seqNum.length() == 1)
+	{
+		name[2] = seqNum[0];
+	}
 
+	if (top.length() == 2)
+	{
+		name[4] = top[0];
+		name[5] = top[1];
+	}
+	else if (top.length() == 1)
+	{
+		name[5] = top[0];
+	}
+
+	if (order.length() == 2)
+	{
+		name[7] = order[0];
+		name[8] = order[1];
+	}
+	else if (top.length() == 1)
+	{
+		name[8] = order[0];
+	}
+
+	return name;
+}
 bool verDiff(vector<vector<pair<Point, Point>>> &ver)
 {
 	//選取某一個元素
@@ -457,13 +502,11 @@ void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Poi
 	{
 		for (int j = 0; j < roit.at(i).size(); j++)
 		{
-			string name;
-			name = rand();
-			imgShowFunction( name, roit.at(i).at(j));
+			string name = setName(seq,to_string(i+1),to_string(j+1)); // 序列號_由上數下來第幾層_由左到右第幾章圖
+			imwrite(name+".jpg", roit.at(i).at(j));
 		}
 	}
 }
-
 
 void getInformation(Mat src)
 {
@@ -471,9 +514,9 @@ void getInformation(Mat src)
 	src_width = src.cols;
 }
 
-void testLine(Mat &img)
+void testLine(Mat &img,string f)
 {
-	img = imread("img012.jpg");
+	img = imread(f.c_str());
 }
 
 void printLog()
@@ -514,13 +557,17 @@ void setlinefinder(Mat &img_canny,Mat &img_src)
 	imgShowFunction("預測線", img2);
 	imgShowFunction("原圖", img_src);
 	printLog();
-	waitKey(0);
+	
 }
-
-int main()
+//argv[1]為檔案路徑 argv[2]為圖片序列號
+int main(int argc , char* argv[])
 {
 	Mat img_src, img_gray, img_canny,img_bin;
-	testLine(img_src); //讀圖
+	string filename;
+//	cout << filename;
+	filename = argv[1];
+	seq = argv[2];
+	testLine(img_src,filename); //讀圖
 	getInformation(img_src); // 拿原圖的width height
 	cvtColor(img_src, img_gray, CV_BGR2GRAY); //轉灰階
 	threshold(img_gray, img_bin, 200, 255, THRESH_BINARY | THRESH_OTSU); //轉binary
