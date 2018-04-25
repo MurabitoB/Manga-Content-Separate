@@ -502,7 +502,7 @@ void horizonCut(vector<vector<pair<Point, Point>>> &verC, vector<vector<pair<Poi
 	{
 		for (int j = 0; j < roit.at(i).size(); j++)
 		{
-			string name = setName(seq,to_string(i+1),to_string(j+1)); // 序列號_由上數下來第幾層_由左到右第幾章圖
+			string name = setName(seq,to_string(i+1),to_string(roit.at(i).size() - j)); // 序列號_由上數下來第幾層_由左到右第幾章圖
 			imwrite(name+".jpg", roit.at(i).at(j));
 		}
 	}

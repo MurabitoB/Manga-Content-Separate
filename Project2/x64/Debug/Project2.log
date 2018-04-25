@@ -1,4 +1,4 @@
-﻿Build started 2018/4/16 上午 12:45:04.
+﻿Build started 2018/4/23 下午 04:23:19.
      1>Project "E:\大三課程\專題\Project2\Manga-Content-Separate\Project2\Project2.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          D:\vs2013\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt Source.cpp
@@ -13,4 +13,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.91
+Time Elapsed 00:00:04.10
